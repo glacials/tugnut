@@ -82,13 +82,19 @@ func (p *parser) Segments() ([]run.Segment, error) {
 			return []run.Segment{}, fmt.Errorf("can't parse segment game time: %s", err)
 		}
 
+		endTime := run.Duration{
+			RealTime: realEndTime,
+			GameTime: gameEndTime,
+		}
+
 		segments[i] = run.Segment{
 			Name:      s.Name,
 			StartTime: startTime,
-			EndTime: run.Duration{
-				RealTime: realEndTime,
-				GameTime: gameEndTime,
-			},
+			EndTime:   endTime,
+		}
+		segments[i].Duration = run.Duration{
+			RealTime: endTime.RealTime - startTime.RealTime,
+			GameTime: endTime.GameTime - startTime.GameTime,
 		}
 	}
 	return segments, nil
