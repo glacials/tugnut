@@ -11,12 +11,13 @@ import (
 	"github.com/glacials/tugnut/run"
 )
 
-// parser implements parser.Parser
+// parser implements github.com/glacials/tugnut/parser.Parser
 type parser struct {
 	f io.Reader
 	r RunTag
 }
 
+// NewParser constructs and returns a LiveSplit parser. No parsing is performed.
 func NewParser(r io.Reader) *parser {
 	p := parser{
 		f: r,
