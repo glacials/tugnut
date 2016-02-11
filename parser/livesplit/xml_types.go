@@ -38,7 +38,7 @@ type SegmentsTag struct {
 
 type SegmentTag struct {
 	XMLName         xml.Name           `xml:"Segment,name"`
-	Name            string             `xml:"name"`
+	Name            string             `xml:"Name"`
 	SplitTimes      SplitTimesTag      `xml:"SplitTimes"`
 	BestSegmentTime BestSegmentTimeTag `xml:"BestSegmentTime"`
 	SegmentHistory  SegmentHistoryTag  `xml:"SegmentHistory"`
