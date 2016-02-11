@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-// parseTime takes a LiveSplit duration and returns the raw number of milliseconds it represents. A LiveSplit duration
-// is a string that looks like
+// parseTime takes a LiveSplit duration and returns the time.Duration that corresponds to it. A LiveSplit duration is a
+// string that looks like
 //
 //   (\d\d:)?(\d\d:)?(\d\d:)?((\d\d\)(\.\d+)?)?
 //

@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/glacials/tugnut/parser"
+	"github.com/glacials/tugnut/run"
 )
 
 func main() {
@@ -23,15 +25,33 @@ func main() {
 		file, err := fileHeaders[0].Open()
 		if err != nil {
 			w.WriteHeader(400)
-			w.Write(jsonErr("Couldn't read your file.", nil))
+			w.Write(jsonErr("Couldn't read your file.", err))
 			return
 		}
 
-		p := parser.New(file)
+		p := parser.New(run.Config{
+			Parsables: map[run.Parsable]struct{}{
+				run.History:        struct{}{},
+				run.Segments:       struct{}{},
+				run.SegmentHistory: struct{}{},
+			},
+		})
 
 		w.WriteHeader(200)
-		p.Parse()
-		w.Write(jsonRun(p))
+		r, err := p.Parse(file)
+		if err != nil {
+			w.WriteHeader(400)
+			w.Write(jsonErr("Couldn't parse your file.", err))
+		}
+
+		j, err := json.Marshal(r)
+		if err != nil {
+			w.WriteHeader(400)
+			w.Write(jsonErr("Run was valid, but encountered an error preparing it.", err))
+			return
+		}
+
+		w.Write(j)
 	}))
 
 	server := http.Server{

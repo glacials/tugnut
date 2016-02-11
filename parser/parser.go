@@ -17,13 +17,9 @@ type Segment interface {
 }
 
 type Parser interface {
-	Parse() error
-	Game() string
-	Category() string
-	Attempts() uint
-	Segments() ([]run.Segment, error)
+	Parse(io.Reader) (run.Run, error)
 }
 
-func New(r io.Reader) Parser {
-	return Parser(livesplit.NewParser(r))
+func New(c run.Config) Parser {
+	return Parser(livesplit.NewParser(c))
 }
