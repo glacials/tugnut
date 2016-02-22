@@ -56,7 +56,7 @@ func main() {
 	}))
 
 	server := http.Server{
-		Addr:    ":5000",
+		Addr:    ":8080",
 		Handler: mux,
 	}
 	err := server.ListenAndServe()
