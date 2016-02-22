@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/glacials/tugnut/parser"
+	"github.com/glacials/tugnut/responses"
 	"github.com/glacials/tugnut/run"
 )
 
@@ -17,7 +18,7 @@ func main() {
 		multipartForm := req.MultipartForm
 		if multipartForm == nil {
 			w.WriteHeader(400)
-			w.Write(jsonErr("You need to include a `file` parameter. Make sure it's a file, not a string.", nil))
+			w.Write(responses.JSONErr("You need to include a `file` parameter. Make sure it's a file, not a string.", nil))
 			return
 		}
 
@@ -25,7 +26,7 @@ func main() {
 		file, err := fileHeaders[0].Open()
 		if err != nil {
 			w.WriteHeader(400)
-			w.Write(jsonErr("Couldn't read your file.", err))
+			w.Write(responses.JSONErr("Couldn't read your file.", err))
 			return
 		}
 
@@ -41,13 +42,13 @@ func main() {
 		r, err := p.Parse(file)
 		if err != nil {
 			w.WriteHeader(400)
-			w.Write(jsonErr("Couldn't parse your file.", err))
+			w.Write(responses.JSONErr("Couldn't parse your file.", err))
 		}
 
 		j, err := json.Marshal(r)
 		if err != nil {
 			w.WriteHeader(400)
-			w.Write(jsonErr("Run was valid, but encountered an error preparing it.", err))
+			w.Write(responses.JSONErr("Run was valid, but encountered an error preparing it.", err))
 			return
 		}
 
@@ -55,7 +56,7 @@ func main() {
 	}))
 
 	server := http.Server{
-		Addr:    ":8000",
+		Addr:    ":5000",
 		Handler: mux,
 	}
 	err := server.ListenAndServe()

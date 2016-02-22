@@ -1,4 +1,4 @@
-package main
+package responses
 
 import (
 	"encoding/json"
@@ -6,13 +6,13 @@ import (
 
 type errorResponse struct {
 	Error   string `json:"error"`
-	Details string `json:"details,omitempty"`
+	Details error  `json:"details,omitempty"`
 }
 
-func jsonErr(msg string, err error) []byte {
+func JSONErr(msg string, err error) []byte {
 	j, err := json.Marshal(errorResponse{
 		Error:   msg,
-		Details: err.Error(),
+		Details: err,
 	})
 
 	if err != nil {
