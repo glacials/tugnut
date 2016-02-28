@@ -5,6 +5,7 @@ import (
 
 	"github.com/glacials/tugnut/parser/livesplit"
 	"github.com/glacials/tugnut/run"
+	"golang.org/x/net/context"
 )
 
 type Segment interface {
@@ -17,9 +18,9 @@ type Segment interface {
 }
 
 type Parser interface {
-	Parse(io.Reader) (run.Run, error)
+	Parse(context.Context, io.Reader) (run.Run, error)
 }
 
-func New(c run.Config) Parser {
-	return Parser(livesplit.NewParser(c))
+func New(ctx context.Context, c run.Config) Parser {
+	return Parser(livesplit.NewParser(ctx, c))
 }

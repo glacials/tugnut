@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/glacials/tugnut/run"
+	"golang.org/x/net/context"
 )
 
 // parser implements github.com/glacials/tugnut/parser.Parser
@@ -17,7 +18,7 @@ type parser struct {
 }
 
 // NewParser constructs and returns a LiveSplit parser. No parsing is performed.
-func NewParser(c run.Config) *parser {
+func NewParser(ctx context.Context, c run.Config) *parser {
 	p := parser{
 		c: c,
 	}
@@ -25,7 +26,7 @@ func NewParser(c run.Config) *parser {
 	return &p
 }
 
-func (p *parser) Parse(r io.Reader) (run.Run, error) {
+func (p *parser) Parse(ctx context.Context, r io.Reader) (run.Run, error) {
 	b := make([]byte, 1024*1024)
 	bytesRead, err := r.Read(b)
 	if err != nil {
@@ -44,14 +45,14 @@ func (p *parser) Parse(r io.Reader) (run.Run, error) {
 		return run.Run{}, errors.New(fmt.Sprintf("can't parse LiveSplit file: %s", err))
 	}
 
-	p.parseGeneralInfo(&input, &output)
+	p.parseGeneralInfo(ctx, &input, &output)
 
 	if _, ok := p.c.Parsables[run.History]; ok {
-		p.parseHistory(&input, &output)
+		p.parseHistory(ctx, &input, &output)
 	}
 
 	if _, ok := p.c.Parsables[run.Segments]; ok {
-		err := p.parseSegments(&input, &output)
+		err := p.parseSegments(ctx, &input, &output)
 		if err != nil {
 			return run.Run{}, fmt.Errorf("can't parse segments: %s", err)
 		}
@@ -60,7 +61,7 @@ func (p *parser) Parse(r io.Reader) (run.Run, error) {
 	return output, nil
 }
 
-func (p *parser) parseGeneralInfo(input *RunTag, output *run.Run) {
+func (p *parser) parseGeneralInfo(ctx context.Context, input *RunTag, output *run.Run) {
 	output.Game = run.Game{
 		Names: []string{input.Game},
 		SRLInfo: run.SRLGameInfo{
@@ -84,11 +85,11 @@ func (p *parser) parseGeneralInfo(input *RunTag, output *run.Run) {
 	output.Attempts = input.Attempts
 }
 
-func (p *parser) parseHistory(input *RunTag, output *run.Run) {
+func (p *parser) parseHistory(ctx context.Context, input *RunTag, output *run.Run) {
 	// TODO
 }
 
-func (p *parser) parseSegments(input *RunTag, output *run.Run) error {
+func (p *parser) parseSegments(ctx context.Context, input *RunTag, output *run.Run) error {
 	output.Segments = make([]run.Segment, len(input.Segments.Segments))
 	for i, s := range input.Segments.Segments {
 
