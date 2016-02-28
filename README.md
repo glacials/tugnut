@@ -14,10 +14,15 @@ tugnut
 Now Tugnut is listening on port 8000 for requests. In another terminal you can give it a LiveSplit file:
 
 ```bash
-curl localhost:8000 -F file=@/path/to/livesplit/file.lss
+curl localhost:8080/parse/livesplit -F file=@/path/to/livesplit/file.lss
 ```
 
 and you should receive a JSON interpretation of it back.
+
+### Running tests
+```bash
+go test ./...
+```
 
 ## Using Tugnut headlessly
 

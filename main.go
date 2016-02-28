@@ -28,7 +28,7 @@ func main() {
 
 func buildMux(ctx context.Context) http.Handler {
 	mux := http.NewServeMux()
-	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+	mux.Handle("/parse/livesplit", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		req.ParseMultipartForm(1024 * 1024)
 
 		multipartForm := req.MultipartForm
