@@ -34,6 +34,11 @@ func main() {
 
 func buildMux(ctx context.Context) http.Handler {
 	mux := http.NewServeMux()
+
+	mux.Handle("/health", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(200)
+	}))
+
 	mux.Handle("/parse/livesplit", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		if req.ParseMultipartForm(memPerFile); req.MultipartForm == nil {
 			w.WriteHeader(400)
