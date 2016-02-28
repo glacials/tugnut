@@ -11,6 +11,12 @@ import (
 	"golang.org/x/net/context"
 )
 
+const (
+	// memPerFile is the max amount of memory one uploaded file can take up, in bytes. If a file doesn't fit in this slot,
+	// its remainder is stored in temporary files on disk. See: https://godoc.org/net/http#Request.ParseMultipartForm
+	memPerFile = 1024 * 1024
+)
+
 func main() {
 	ctx := context.Background()
 
@@ -29,16 +35,13 @@ func main() {
 func buildMux(ctx context.Context) http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("/parse/livesplit", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		req.ParseMultipartForm(1024 * 1024)
-
-		multipartForm := req.MultipartForm
-		if multipartForm == nil {
+		if req.ParseMultipartForm(memPerFile); req.MultipartForm == nil {
 			w.WriteHeader(400)
 			w.Write(responses.JSONErr("You need to include a `file` parameter. Make sure it's a file, not a string.", nil))
 			return
 		}
 
-		fileHeaders := multipartForm.File["file"]
+		fileHeaders := req.MultipartForm.File["file"]
 		file, err := fileHeaders[0].Open()
 		if err != nil {
 			w.WriteHeader(400)
