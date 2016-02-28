@@ -8,9 +8,25 @@ import (
 	"github.com/glacials/tugnut/parser"
 	"github.com/glacials/tugnut/responses"
 	"github.com/glacials/tugnut/run"
+	"golang.org/x/net/context"
 )
 
 func main() {
+	ctx := context.Background()
+
+	mux := buildMux(ctx)
+	server := http.Server{
+		Addr:    ":8080",
+		Handler: mux,
+	}
+
+	err := server.ListenAndServe()
+	if err != nil {
+		panic(fmt.Sprintf("can't start server: %s", err))
+	}
+}
+
+func buildMux(ctx context.Context) http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		req.ParseMultipartForm(1024 * 1024)
@@ -30,7 +46,7 @@ func main() {
 			return
 		}
 
-		p := parser.New(run.Config{
+		p := parser.New(ctx, run.Config{
 			Parsables: map[run.Parsable]struct{}{
 				run.History:        struct{}{},
 				run.Segments:       struct{}{},
@@ -39,7 +55,7 @@ func main() {
 		})
 
 		w.WriteHeader(200)
-		r, err := p.Parse(file)
+		r, err := p.Parse(ctx, file)
 		if err != nil {
 			w.WriteHeader(400)
 			w.Write(responses.JSONErr("Couldn't parse your file.", err))
@@ -54,13 +70,5 @@ func main() {
 
 		w.Write(j)
 	}))
-
-	server := http.Server{
-		Addr:    ":8080",
-		Handler: mux,
-	}
-	err := server.ListenAndServe()
-	if err != nil {
-		panic(fmt.Sprintf("can't start server: %s", err))
-	}
+	return mux
 }
