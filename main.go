@@ -35,6 +35,11 @@ func main() {
 func buildMux(ctx context.Context) http.Handler {
 	mux := http.NewServeMux()
 
+	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(200)
+		w.Write(responses.JSONErr("Endpoints are GET /, GET /health, and POST /parse/livesplit.", nil))
+	}))
+
 	mux.Handle("/health", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(200)
 	}))
@@ -42,7 +47,11 @@ func buildMux(ctx context.Context) http.Handler {
 	mux.Handle("/parse/livesplit", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		if req.ParseMultipartForm(memPerFile); req.MultipartForm == nil {
 			w.WriteHeader(400)
-			w.Write(responses.JSONErr("You need to include a `file` parameter. Make sure it's a file, not a string.", nil))
+			res := responses.JSONErr(
+				"You need a `file` parameter. Make sure it's a file, not a string. In cURL: `-F file=@/path/to/file`",
+				nil,
+			)
+			w.Write(res)
 			return
 		}
 
