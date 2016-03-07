@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 
 	"github.com/glacials/tugnut/parser"
 	"github.com/glacials/tugnut/responses"
@@ -48,18 +50,31 @@ func buildMux(ctx context.Context) http.Handler {
 		if req.ParseMultipartForm(memPerFile); req.MultipartForm == nil {
 			w.WriteHeader(400)
 			res := responses.JSONErr(
-				"You need a `file` parameter. Make sure it's a file, not a string. In cURL: `-F file=@/path/to/file`",
+				"You need a `splits` parameter. Make sure it's a file, not a string. In cURL: `-F splits=@/path/to/file`",
 				nil,
 			)
 			w.Write(res)
 			return
 		}
 
-		fileHeaders := req.MultipartForm.File["file"]
-		file, err := fileHeaders[0].Open()
-		if err != nil {
-			w.WriteHeader(400)
-			w.Write(responses.JSONErr("Couldn't read your file.", err))
+		multipartStrings := req.MultipartForm.Value["splits"]
+		multipartFiles := req.MultipartForm.File["splits"]
+
+		var (
+			splits io.Reader
+			err    error
+		)
+		if len(multipartStrings) > 0 {
+			splits = strings.NewReader(multipartStrings[0])
+		} else if len(multipartFiles) > 0 {
+			splits, err = multipartFiles[0].Open()
+			if err != nil {
+				w.WriteHeader(400)
+				w.Write(responses.JSONErr("Received your splits file, but couldn't open it.", err))
+				return
+			}
+		} else {
+			w.Write(responses.JSONErr("You submitted a multipart form, but there was no `splits` parameter.", nil))
 			return
 		}
 
@@ -72,7 +87,7 @@ func buildMux(ctx context.Context) http.Handler {
 		})
 
 		w.WriteHeader(200)
-		r, err := p.Parse(ctx, file)
+		r, err := p.Parse(ctx, splits)
 		if err != nil {
 			w.WriteHeader(400)
 			w.Write(responses.JSONErr("Couldn't parse your file.", err))
