@@ -1,20 +1,8 @@
-package run
+package livesplit
 
 import (
 	"time"
 )
-
-type Parsable uint
-
-const (
-	History Parsable = iota
-	Segments
-	SegmentHistory
-)
-
-type Config struct {
-	Parsables map[Parsable]struct{}
-}
 
 // Run is a single file from a timer, parsed.
 type Run struct {

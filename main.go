@@ -7,9 +7,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/glacials/tugnut/parser"
+	"github.com/glacials/tugnut/parsers/livesplit"
 	"github.com/glacials/tugnut/responses"
-	"github.com/glacials/tugnut/run"
 	"golang.org/x/net/context"
 )
 
@@ -37,9 +36,15 @@ func main() {
 func buildMux(ctx context.Context) http.Handler {
 	mux := http.NewServeMux()
 
+	p := livesplit.NewParser(ctx, livesplit.Config{
+		ParseSegments:       true,
+		ParseSegmentHistory: false,
+		ParseRunHistory:     false,
+	})
+
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(200)
-		w.Write(responses.JSONErr("Endpoints are GET /, GET /health, and POST /parse/livesplit.", nil))
+		w.Write(responses.JSONErr("Endpoints are GET /health and POST /parse/livesplit.", nil))
 	}))
 
 	mux.Handle("/health", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -77,14 +82,6 @@ func buildMux(ctx context.Context) http.Handler {
 			w.Write(responses.JSONErr("You submitted a multipart form, but there was no `splits` parameter.", nil))
 			return
 		}
-
-		p := parser.New(ctx, run.Config{
-			Parsables: map[run.Parsable]struct{}{
-				run.History:        struct{}{},
-				run.Segments:       struct{}{},
-				run.SegmentHistory: struct{}{},
-			},
-		})
 
 		w.WriteHeader(200)
 		r, err := p.Parse(ctx, splits)
