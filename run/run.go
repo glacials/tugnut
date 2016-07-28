@@ -1,4 +1,4 @@
-package livesplit
+package run
 
 import (
 	"time"
@@ -52,12 +52,13 @@ type SRDCCategoryInfo struct {
 // StartTime, and EndTime are always available if known, or if they can be calculated from other data in the timer's
 // output. ShortestDuration is only available if the timer includes it or supplies full history for each segment.
 type Segment struct {
-	Name      string   `json:"name"`
-	Duration  Duration `json:"duration"`
-	StartTime Duration `json:"start_time"`
-	EndTime   Duration `json:"end_time"`
+	Name     string   `json:"name"`
+	Duration Duration `json:"duration"`
+	Start    Duration `json:"start"`
+	End      Duration `json:"end"`
 
-	ShortestDuration time.Duration `json:"shortest_duration"`
+	BestRealDuration time.Duration `json:"shortest_real_duration"`
+	BestGameDuration time.Duration `json:"shortest_real_duration"`
 }
 
 // Duration is a wrapper around time.Duration that includes both a real-world time and a game-world time. Each of these

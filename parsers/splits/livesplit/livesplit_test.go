@@ -4,19 +4,16 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/glacials/tugnut/run"
 	"golang.org/x/net/context"
 )
 
 func TestNewParser(t *testing.T) {
 	ctx := context.Background()
 
-	rc := run.Config{
-		Parsables: map[run.Parsable]struct{}{
-			run.History:        struct{}{},
-			run.Segments:       struct{}{},
-			run.SegmentHistory: struct{}{},
-		},
+	rc := Config{
+		ParseSegments:       false,
+		ParseSegmentHistory: false,
+		ParseRunHistory:     false,
 	}
 
 	p := NewParser(ctx, rc)
@@ -28,12 +25,10 @@ func TestNewParser(t *testing.T) {
 func TestParse(t *testing.T) {
 	ctx := context.Background()
 
-	rc := run.Config{
-		Parsables: map[run.Parsable]struct{}{
-			run.History:        struct{}{},
-			run.Segments:       struct{}{},
-			run.SegmentHistory: struct{}{},
-		},
+	rc := Config{
+		ParseSegments:       false,
+		ParseSegmentHistory: false,
+		ParseRunHistory:     false,
 	}
 
 	p := NewParser(ctx, rc)

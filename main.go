@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/glacials/tugnut/parsers/livesplit"
+	"github.com/glacials/tugnut/parsers/splits"
 	"github.com/glacials/tugnut/responses"
 	"golang.org/x/net/context"
 )
@@ -36,11 +36,10 @@ func main() {
 func buildMux(ctx context.Context) http.Handler {
 	mux := http.NewServeMux()
 
-	p := livesplit.NewParser(ctx, livesplit.Config{
-		ParseSegments:       true,
-		ParseSegmentHistory: false,
-		ParseRunHistory:     false,
-	})
+	p, err := splits.NewParser(ctx, splits.LiveSplit)
+	if err != nil {
+		panic(fmt.Sprintf("can't make a parser: %s", err))
+	}
 
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(200)

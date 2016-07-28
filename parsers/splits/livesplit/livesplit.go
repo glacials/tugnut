@@ -8,10 +8,10 @@ import (
 	"log"
 	"time"
 
+	"github.com/glacials/tugnut/run"
 	"golang.org/x/net/context"
 )
 
-// parser implements github.com/glacials/tugnut/parser.Parser
 type parser struct {
 	c Config
 }
@@ -37,7 +37,7 @@ func NewParser(ctx context.Context, c Config) *parser {
 }
 
 // Parse reads and parses a LiveSplit file.
-func (p *parser) Parse(ctx context.Context, r io.Reader) (Run, error) {
+func (p *parser) Parse(ctx context.Context, r io.Reader) (run.Run, error) {
 	b := make([]byte, 1024*1024)
 	bytesRead, err := r.Read(b)
 	if err != nil {
@@ -48,12 +48,12 @@ func (p *parser) Parse(ctx context.Context, r io.Reader) (Run, error) {
 
 	var (
 		input  RunTag
-		output Run
+		output run.Run
 	)
 
 	err = xml.Unmarshal(b[:bytesRead], &input)
 	if err != nil {
-		return Run{}, errors.New(fmt.Sprintf("can't parse LiveSplit file: %s", err))
+		return run.Run{}, errors.New(fmt.Sprintf("can't parse LiveSplit file: %s", err))
 	}
 
 	p.parseGeneralInfo(ctx, &input, &output)
@@ -65,37 +65,37 @@ func (p *parser) Parse(ctx context.Context, r io.Reader) (Run, error) {
 	if p.c.ParseSegments {
 		err := p.parseSegments(ctx, &input, &output)
 		if err != nil {
-			return Run{}, fmt.Errorf("can't parse segments: %s", err)
+			return run.Run{}, fmt.Errorf("can't parse segments: %s", err)
 		}
 	}
 
 	if p.c.ParseSegmentHistory {
 		err := p.parseSegmentHistory(ctx, &input, &output)
 		if err != nil {
-			return Run{}, fmt.Errorf("can't parse segment history: %s", err)
+			return run.Run{}, fmt.Errorf("can't parse segment history: %s", err)
 		}
 	}
 
 	return output, nil
 }
 
-func (p *parser) parseGeneralInfo(ctx context.Context, input *RunTag, output *Run) {
-	output.Game = Game{
+func (p *parser) parseGeneralInfo(ctx context.Context, input *RunTag, output *run.Run) {
+	output.Game = run.Game{
 		Names: []string{input.Game},
-		SRLInfo: SRLGameInfo{
+		SRLInfo: run.SRLGameInfo{
 			ID: "",
 		},
-		SRDCInfo: SRDCGameInfo{
+		SRDCInfo: run.SRDCGameInfo{
 			ID: "",
 		},
 	}
 
-	output.Category = Category{
+	output.Category = run.Category{
 		Names: []string{input.Category},
-		SRLInfo: SRLCategoryInfo{
+		SRLInfo: run.SRLCategoryInfo{
 			ID: "",
 		},
-		SRDCInfo: SRDCCategoryInfo{
+		SRDCInfo: run.SRDCCategoryInfo{
 			ID: "",
 		},
 	}
@@ -103,73 +103,73 @@ func (p *parser) parseGeneralInfo(ctx context.Context, input *RunTag, output *Ru
 	output.Attempts = input.Attempts
 }
 
-func (p *parser) parseRunHistory(ctx context.Context, input *RunTag, output *Run) {
+func (p *parser) parseRunHistory(ctx context.Context, input *RunTag, output *run.Run) {
 	// TODO
 }
 
-func (p *parser) parseSegments(ctx context.Context, input *RunTag, output *Run) error {
-	output.Segments = make([]Segment, len(input.Segments.Segments))
+func (p *parser) parseSegments(ctx context.Context, input *RunTag, output *run.Run) error {
+	output.Segments = make([]run.Segment, len(input.Segments.Segments))
 	for i, s := range input.Segments.Segments {
 
 		// The current segment's start time is equal to the previous segment's end time
-		var startTime Duration
+		var start, end run.Duration
 		if i == 0 {
-			startTime = Duration{
+			start = run.Duration{
 				RealTime: time.Duration(0),
 				GameTime: time.Duration(0),
 			}
 		} else {
-			startTime = output.Segments[i-1].EndTime
+			start = output.Segments[i-1].End
 		}
 
-		realEndTime, err := parseTime(
+		realEnd, err := parseTime(
 			s.SplitTimes.SplitTimes[0].RealTime,
 		)
 		if err != nil {
 			return fmt.Errorf("can't parse segment real time: %s", err)
 		}
-		gameEndTime, err := parseTime(
+		gameEnd, err := parseTime(
 			s.SplitTimes.SplitTimes[0].GameTime,
 		)
 		if err != nil {
 			return fmt.Errorf("can't parse segment game time: %s", err)
 		}
 
-		endTime := Duration{
-			RealTime: realEndTime,
-			GameTime: gameEndTime,
+		end = run.Duration{
+			RealTime: realEnd,
+			GameTime: gameEnd,
 		}
 
 		var realDuration time.Duration
-		if endTime.RealTime == 0 {
+		if end.RealTime == 0 {
 			realDuration = 0
 		} else {
-			realDuration = endTime.RealTime - startTime.RealTime
+			realDuration = end.RealTime - start.RealTime
 		}
 
 		var gameDuration time.Duration
-		if endTime.GameTime == 0 {
+		if end.GameTime == 0 {
 			gameDuration = 0
 		} else {
-			gameDuration = endTime.GameTime - startTime.GameTime
+			gameDuration = end.GameTime - start.GameTime
 		}
 
-		duration := Duration{
+		duration := run.Duration{
 			RealTime: realDuration,
 			GameTime: gameDuration,
 		}
 
-		output.Segments[i] = Segment{
-			Name:      s.Name,
-			StartTime: startTime,
-			EndTime:   endTime,
-			Duration:  duration,
+		output.Segments[i] = run.Segment{
+			Name:     s.Name,
+			Start:    start,
+			End:      end,
+			Duration: duration,
 		}
 	}
 	return nil
 }
 
-func (p *parser) parseSegmentHistory(ctx context.Context, input *RunTag, output *Run) error {
+func (p *parser) parseSegmentHistory(ctx context.Context, input *RunTag, output *run.Run) error {
 	// TODO
 	return nil
 }
