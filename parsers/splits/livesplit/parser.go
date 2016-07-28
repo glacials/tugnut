@@ -28,7 +28,7 @@ type Config struct {
 }
 
 // NewParser constructs and returns a LiveSplit parser. No parsing is performed.
-func NewParser(ctx context.Context, c Config) *parser {
+func NewParser(c Config) *parser {
 	p := parser{
 		c: c,
 	}

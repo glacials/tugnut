@@ -19,9 +19,9 @@ const (
 	LiveSplit timer = iota
 )
 
-func NewParser(ctx context.Context, t timer) (Parser, error) {
+func NewParser(t timer) (Parser, error) {
 	if t == LiveSplit {
-		return livesplit.NewParser(ctx, livesplit.Config{
+		return livesplit.NewParser(livesplit.Config{
 			ParseSegments:       true,
 			ParseSegmentHistory: false,
 			ParseRunHistory:     false,

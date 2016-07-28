@@ -8,15 +8,13 @@ import (
 )
 
 func TestNewParser(t *testing.T) {
-	ctx := context.Background()
-
-	rc := Config{
+	c := Config{
 		ParseSegments:       false,
 		ParseSegmentHistory: false,
 		ParseRunHistory:     false,
 	}
 
-	p := NewParser(ctx, rc)
+	p := NewParser(c)
 	if p == nil {
 		t.Errorf("got a nil parser back")
 	}
@@ -25,13 +23,13 @@ func TestNewParser(t *testing.T) {
 func TestParse(t *testing.T) {
 	ctx := context.Background()
 
-	rc := Config{
+	c := Config{
 		ParseSegments:       false,
 		ParseSegmentHistory: false,
 		ParseRunHistory:     false,
 	}
 
-	p := NewParser(ctx, rc)
+	p := NewParser(c)
 
 	r := strings.NewReader(`<Run></Run>`)
 
