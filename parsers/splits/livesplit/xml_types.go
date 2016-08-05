@@ -16,7 +16,7 @@ type RunTag struct {
 }
 
 type MetadataTag struct {
-	XMLName xml.Name `xml:"Metadata",name`
+	XMLName xml.Name `xml:"Metadata,name"`
 	Run     string   `xml:"Run"`
 }
 

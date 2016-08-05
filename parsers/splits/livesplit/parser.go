@@ -29,11 +29,9 @@ type Config struct {
 
 // NewParser constructs and returns a LiveSplit parser. No parsing is performed.
 func NewParser(c Config) *parser {
-	p := parser{
+	return &parser{
 		c: c,
 	}
-
-	return &p
 }
 
 // Parse reads and parses a LiveSplit file.
@@ -41,7 +39,7 @@ func (p *parser) Parse(ctx context.Context, r io.Reader) (run.Run, error) {
 	b := make([]byte, 1024*1024)
 	bytesRead, err := r.Read(b)
 	if err != nil {
-		panic("Can't read")
+		return run.Run{}, fmt.Errorf("can't read LiveSplit splits: %s", err)
 	}
 
 	log.Printf("LiveSplit parser read %d bytes", bytesRead)
@@ -56,7 +54,7 @@ func (p *parser) Parse(ctx context.Context, r io.Reader) (run.Run, error) {
 		return run.Run{}, errors.New(fmt.Sprintf("can't parse LiveSplit file: %s", err))
 	}
 
-	p.parseGeneralInfo(ctx, &input, &output)
+	p.parseBasicInfo(ctx, &input, &output)
 
 	if p.c.ParseRunHistory {
 		p.parseRunHistory(ctx, &input, &output)
@@ -79,7 +77,7 @@ func (p *parser) Parse(ctx context.Context, r io.Reader) (run.Run, error) {
 	return output, nil
 }
 
-func (p *parser) parseGeneralInfo(ctx context.Context, input *RunTag, output *run.Run) {
+func (p *parser) parseBasicInfo(ctx context.Context, input *RunTag, output *run.Run) {
 	output.Game = run.Game{
 		Names: []string{input.Game},
 		SRLInfo: run.SRLGameInfo{
